@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction | Deep Learning (ANN)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <span class="brand-icon">⚡</span>
+                <div>
+                    <h1 class="brand-title">ChurnGuard AI</h1>
+                    <p class="brand-subtitle">Telco Customer Churn Prediction &bull; TensorFlow ANN</p>
+                </div>
+            </div>
+            <div class="nav-status">
+                <span class="status-indicator" id="healthIndicator"></span>
+                <span class="status-text" id="healthStatus">Checking system...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero & Model Summary Banner -->
+        <section class="metrics-banner">
+            <div class="metric-card">
+                <span class="metric-label">Model Architecture</span>
+                <span class="metric-val">ANN (26-15-1)</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Test Accuracy</span>
+                <span class="metric-val">{{ accuracy }}%</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Precision</span>
+                <span class="metric-val">{{ precision }}%</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Recall</span>
+                <span class="metric-val">{{ recall }}%</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">F1-Score</span>
+                <span class="metric-val">{{ f1 }}%</span>
+            </div>
+        </section>
+
+        <!-- Quick Profile Loader -->
+        <section class="quick-presets">
+            <span class="preset-title">⚡ 1-Click Quick Test Profiles:</span>
+            <div class="preset-buttons">
+                <button type="button" class="btn btn-outline" id="btnPresetHighRisk">🚨 High Risk Profile</button>
+                <button type="button" class="btn btn-outline" id="btnPresetLoyal">🛡️ Loyal Customer Profile</button>
+                <button type="button" class="btn btn-outline" id="btnPresetModerate">⚖️ Moderate Risk Profile</button>
+                <button type="button" class="btn btn-ghost" id="btnClearForm">↺ Reset</button>
+            </div>
+        </section>
+
+        <div class="grid-layout">
+            <!-- Left Column: Prediction Form -->
+            <section class="card form-card">
+                <form id="churnForm">
+                    <!-- 1. Demographics Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-number">1</span> Customer Demographics
+                        </h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="gender" class="form-control" required>
+                                    <option value="Female">Female</option>
+                                    <option value="Male" selected>Male</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="SeniorCitizen">Senior Citizen</label>
+                                <select id="SeniorCitizen" name="SeniorCitizen" class="form-control" required>
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="Partner">Partner</label>
+                                <select id="Partner" name="Partner" class="form-control" required>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No" selected>No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Dependents">Dependents</label>
+                                <select id="Dependents" name="Dependents" class="form-control" required>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No" selected>No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Services Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-number">2</span> Phone & Internet Services
+                        </h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="PhoneService">Phone Service</label>
+                                <select id="PhoneService" name="PhoneService" class="form-control" required>
+                                    <option value="Yes" selected>Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="MultipleLines">Multiple Lines</label>
+                                <select id="MultipleLines" name="MultipleLines" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="InternetService">Internet Service</label>
+                                <select id="InternetService" name="InternetService" class="form-control" required>
+                                    <option value="Fiber optic" selected>Fiber Optic</option>
+                                    <option value="DSL">DSL</option>
+                                    <option value="No">No Internet Service</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="OnlineSecurity">Online Security</label>
+                                <select id="OnlineSecurity" name="OnlineSecurity" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="OnlineBackup">Online Backup</label>
+                                <select id="OnlineBackup" name="OnlineBackup" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="DeviceProtection">Device Protection</label>
+                                <select id="DeviceProtection" name="DeviceProtection" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="TechSupport">Tech Support</label>
+                                <select id="TechSupport" name="TechSupport" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="StreamingTV">Streaming TV</label>
+                                <select id="StreamingTV" name="StreamingTV" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="StreamingMovies">Streaming Movies</label>
+                                <select id="StreamingMovies" name="StreamingMovies" class="form-control" required>
+                                    <option value="No" selected>No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Account, Contract & Billing Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-number">3</span> Contract & Financials
+                        </h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="Contract">Contract Type</label>
+                                <select id="Contract" name="Contract" class="form-control" required>
+                                    <option value="Month-to-month" selected>Month-to-Month</option>
+                                    <option value="One year">One Year</option>
+                                    <option value="Two year">Two Year</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="PaperlessBilling">Paperless Billing</label>
+                                <select id="PaperlessBilling" name="PaperlessBilling" class="form-control" required>
+                                    <option value="Yes" selected>Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="PaymentMethod">Payment Method</label>
+                                <select id="PaymentMethod" name="PaymentMethod" class="form-control" required>
+                                    <option value="Electronic check" selected>Electronic Check</option>
+                                    <option value="Mailed check">Mailed Check</option>
+                                    <option value="Bank transfer (automatic)">Bank Transfer (auto)</option>
+                                    <option value="Credit card (automatic)">Credit Card (auto)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tenure">Tenure (Months): <span id="tenureVal" class="slider-badge">3</span></label>
+                                <input type="range" id="tenure" name="tenure" min="0" max="72" value="3" class="form-range">
+                            </div>
+                            <div class="form-group">
+                                <label for="MonthlyCharges">Monthly Charges ($)</label>
+                                <input type="number" id="MonthlyCharges" name="MonthlyCharges" step="0.05" min="10" max="150" value="85.50" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="TotalCharges">Total Charges ($) <span class="help-text">(Estimated)</span></label>
+                                <input type="number" id="TotalCharges" name="TotalCharges" step="0.05" min="0" value="256.50" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-block" id="btnSubmit">
+                            <span class="btn-text">Predict Customer Churn</span>
+                            <span class="btn-spinner" id="btnSpinner" style="display: none;"></span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Column: Result Card -->
+            <aside class="card result-card" id="resultCard">
+                <div class="result-placeholder" id="resultPlaceholder">
+                    <div class="placeholder-icon">🔮</div>
+                    <h3>Ready for Prediction</h3>
+                    <p>Enter the customer details on the left or click one of the quick test profiles above, then tap <strong>Predict Customer Churn</strong>.</p>
+                </div>
+
+                <div class="result-content" id="resultContent" style="display: none;">
+                    <div class="result-header">
+                        <span class="prediction-badge" id="predictionBadge">Churn</span>
+                        <span class="risk-badge" id="riskBadge">High Risk</span>
+                    </div>
+
+                    <!-- Churn Probability Gauge Bar -->
+                    <div class="gauge-container">
+                        <div class="gauge-labels">
+                            <span>Churn Risk Probability</span>
+                            <strong id="churnPercentage">0%</strong>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="prob-split">
+                            <span>Retention Probability: <strong id="retentionPercentage">0%</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Strategic Advice -->
+                    <div class="advice-box" id="adviceBox">
+                        <h4 class="advice-title" id="adviceTitle">Recommended Retention Actions</h4>
+                        <p class="advice-text" id="adviceText">Loading recommendation...</p>
+                    </div>
+
+                    <!-- Detailed Factors Breakdown -->
+                    <div class="factors-summary">
+                        <h4>Key Profile Attributes Analyzed:</h4>
+                        <ul class="factors-list" id="factorsList"></ul>
+                    </div>
+
+                    <!-- API Response Toggle -->
+                    <details class="api-debug">
+                        <summary>View Raw JSON API Response</summary>
+                        <pre id="jsonResponse">{}</pre>
+                    </details>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Customer Churn Prediction System &bull; Powered by TensorFlow / Keras & Flask &bull; Accessible across Desktop, Tablet & Mobile</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
